@@ -32,18 +32,35 @@ const actionConfig = {
 
 export default function History() {
   const [history, setHistory] = useState<HistoryEntry[]>([]);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [actionFilter, setActionFilter] = useState("all");
+  const MM_TZ = "Asia/Yangon";
+  const toDateSafe = (s?: string) => {
+  if (!s) return new Date();
+  const hasTZ = /[zZ]|[+-]\d\d:\d\d$/.test(s);
+  return new Date(hasTZ ? s : `${s}Z`); // ✅ treat timezone-less string as UTC
+};
 
   // Fetch history from backend
   useEffect(() => {
-    const fetchHistory = async () => {
+  const fetchHistory = async () => {
+    try {
+      setIsLoadingHistory(true);
+
       const user = JSON.parse(localStorage.getItem("user") || "{}");
       const res = await api.get(`/history/user/${user.id}`);
+
       setHistory(res.data);
-    };
-    fetchHistory();
-  }, []);
+    } catch (error) {
+      console.error("Failed to fetch history:", error);
+    } finally {
+      setIsLoadingHistory(false);
+    }
+  };
+
+  fetchHistory();
+}, []);
 
   const filteredHistory = useMemo(() => {
     return history.filter((entry) => {
@@ -54,27 +71,25 @@ export default function History() {
   }, [history, searchQuery, actionFilter]);
 
   const groupedHistory = useMemo(() => {
-    const groups: Record<string, HistoryEntry[]> = {};
-    filteredHistory.forEach((entry) => {
-      const date = new Date(entry.timestamp);
-      const dateKey = date.toLocaleDateString("en-US", {
-        weekday: "long",
-        month: "long",
-        day: "numeric",
-      });
-      if (!groups[dateKey]) groups[dateKey] = [];
-      groups[dateKey].push(entry);
+  const groups: Record<string, HistoryEntry[]> = {};
+  filteredHistory.forEach((entry) => {
+    const date = toDateSafe(entry.timestamp);
+    const dateKey = date.toLocaleDateString("en-US", {
+      timeZone: MM_TZ,
+      weekday: "long",
+      month: "long",
+      day: "numeric",
     });
-    return groups;
-  }, [filteredHistory]);
+    (groups[dateKey] ||= []).push(entry);
+  });
+  return groups;
+}, [filteredHistory]);
 
   const stats = useMemo(() => {
     const weekAgo = new Date();
     weekAgo.setDate(weekAgo.getDate() - 7);
 
-    const thisWeek = history.filter((e) =>
-      new Date(e.timestamp) >= weekAgo
-    );
+    const thisWeek = history.filter((e) => toDateSafe(e.timestamp) >= weekAgo);
 
     return {
       added: thisWeek.filter((e) => e.action === "added").length,
@@ -167,7 +182,12 @@ export default function History() {
 
       {/* History Timeline */}
       <div className="space-y-8">
-        {Object.entries(groupedHistory).length > 0 ? (
+      {isLoadingHistory ? (
+          <div className="text-center py-16">
+            <div className="animate-spin h-10 w-10 border-4 border-honey/30 border-t-honey rounded-full mx-auto mb-4"></div>
+            <p className="text-muted-foreground">Loading history...</p>
+          </div>
+        ) : Object.entries(groupedHistory).length > 0 ? (
           Object.entries(groupedHistory).map(([date, entries], groupIndex) => (
             <motion.div
               key={date}
@@ -226,10 +246,13 @@ export default function History() {
                             </div>
                           </div>
                           <span className="text-xs text-muted-foreground whitespace-nowrap">
-                            {new Date(entry.timestamp).toLocaleTimeString("en-US", {
-                              hour: "numeric",
-                              minute: "2-digit",
-                            })}
+                            <span className="text-xs text-muted-foreground whitespace-nowrap">
+  {toDateSafe(entry.timestamp).toLocaleTimeString("en-US", {
+    timeZone: MM_TZ,
+    hour: "numeric",
+    minute: "2-digit",
+  })}
+</span>
                           </span>
                         </div>
                       </div>

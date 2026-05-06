@@ -10,13 +10,13 @@ router = APIRouter(prefix="/history", tags=["History"])
 def history_helper(entry) -> dict:
     return {
         "id": str(entry["_id"]),
-        "user_id": entry["user_id"],   # ADD
+        "user_id": entry["user_id"],
         "ingredientName": entry["ingredientName"],
         "action": entry["action"],
         "quantity": entry.get("quantity"),
         "unit": entry.get("unit"),
         "details": entry.get("details"),
-"timestamp": entry["timestamp"].isoformat() if entry.get("timestamp") else None,
+        "timestamp": entry["timestamp"].isoformat() if entry.get("timestamp") else None,
     }
 
 @router.get("/user/{user_id}")

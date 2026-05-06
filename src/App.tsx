@@ -15,6 +15,7 @@ import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
 import { AppLayout } from "./components/layout/AppLayout";
 import { UserProvider } from "./contexts/UserContext";
+import RecipeHistory from "./pages/RecipeHistory";
 
 const queryClient = new QueryClient();
 
@@ -36,6 +37,8 @@ const App = () => (
               <Route path="/history" element={<History />} />
               <Route path="/generate-recipe" element={<GenerateRecipe />} />
               <Route path="/recipe/:id" element={<RecipeDetail />} />
+              <Route path="/recipe/:id" element={<RecipeDetail />} />
+              <Route path="/recipe-history" element={<RecipeHistory />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>

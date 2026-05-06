@@ -6,10 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useToast } from "@/hooks/use-toast";
 import logo from "@/assets/logo.png";
 import { useUser } from "@/contexts/UserContext";
 
 export default function SignIn() {
+  const { toast } = useToast();
   const { setUser } = useUser();
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
@@ -31,27 +33,39 @@ export default function SignIn() {
       const data = await response.json();
 
       if (!response.ok) {
-        alert(data.detail || "Login failed"); // show backend error
+        toast({
+          variant: "destructive",
+          title: "Login Failed",
+          description: data.detail || "Invalid email or password. Please try again.",
+        });
         return;
       }
 
       // ✅ Save user in context
-const userData = {
-  id: data.id,                 // ✅ ADD THIS
-  username: data.username,
-  email: data.email,
-  auth_token: data.auth_token  // optional but good to store
-};
+      const userData = {
+        id: data.id,
+        username: data.username,
+        email: data.email,
+        auth_token: data.auth_token,
+      };
       setUser(userData);
 
       // ✅ Save user in localStorage
       localStorage.setItem("user", JSON.stringify(userData));
 
-     alert(data.message); // welcome message from backend
-      navigate("/dashboard"); // redirect on success
+      toast({
+        title: `Welcome back, ${data.username}! 👋`,
+        description: "You've successfully signed in.",
+      });
+
+      navigate("/dashboard");
     } catch (error) {
       console.error(error);
-      alert("Something went wrong. Please try again.");
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Something went wrong. Please check your connection and try again.",
+      });
     }
   };
 
@@ -62,7 +76,6 @@ const userData = {
         <Link
           to="/"
           className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
-
           <ArrowLeft className="h-4 w-4" />
           <span className="text-sm">Back to home</span>
         </Link>
@@ -100,8 +113,8 @@ const userData = {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="h-11"
-                    required />
-
+                    required
+                  />
                 </div>
 
                 <div className="space-y-2">
@@ -110,7 +123,6 @@ const userData = {
                     <Link
                       to="/forgot-password"
                       className="text-sm text-primary hover:text-primary/80 transition-colors">
-
                       Forgot password?
                     </Link>
                   </div>
@@ -122,18 +134,13 @@ const userData = {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       className="h-11 pr-10"
-                      required />
-
+                      required
+                    />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors">
-
-                      {showPassword ?
-                        <EyeOff className="h-4 w-4" /> :
-
-                        <Eye className="h-4 w-4" />
-                      }
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </button>
                   </div>
                 </div>
@@ -153,6 +160,6 @@ const userData = {
           </Card>
         </motion.div>
       </div>
-    </div>);
-
+    </div>
+  );
 }

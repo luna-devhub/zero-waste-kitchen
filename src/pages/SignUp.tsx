@@ -6,9 +6,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useToast } from "@/hooks/use-toast";
 import logo from "@/assets/logo.png";
 
 export default function SignUp() {
+  const { toast } = useToast();
   const [showPassword, setShowPassword] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -27,27 +29,35 @@ export default function SignUp() {
       const data = await response.json();
 
       if (!response.ok) {
-        // Backend sends detail like "Username already exists"
-        alert(`Error: ${data.detail || "Signup failed"}`);
+        toast({
+          variant: "destructive",
+          title: "Signup Failed",
+          description: data.detail || "Unable to create account. Please try again.",
+        });
         return;
       }
 
       console.log("User created:", data);
-      alert("Account created successfully!");
-      // Optionally redirect to login page
-      // navigate("/signin");
+      toast({
+        title: "Account Created! 🎉",
+        description: "Welcome to Zero-Waste Kitchen! You can now sign in.",
+      });
 
     } catch (error) {
       console.error("Signup failed:", error);
-      alert("Something went wrong. Please try again.");
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Something went wrong. Please check your connection and try again.",
+      });
     }
   };
 
   const passwordRequirements = [
     { label: "At least 8 characters", met: password.length >= 8 },
     { label: "Contains a number", met: /\d/.test(password) },
-    { label: "Contains uppercase letter", met: /[A-Z]/.test(password) }];
-
+    { label: "Contains uppercase letter", met: /[A-Z]/.test(password) }
+  ];
 
   return (
     <div className="min-h-screen gradient-hero flex flex-col">
@@ -56,7 +66,6 @@ export default function SignUp() {
         <Link
           to="/"
           className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
-
           <ArrowLeft className="h-4 w-4" />
           <span className="text-sm">Back to home</span>
         </Link>
@@ -94,8 +103,8 @@ export default function SignUp() {
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     className="h-11"
-                    required />
-
+                    required
+                  />
                 </div>
 
                 <div className="space-y-2">
@@ -107,8 +116,8 @@ export default function SignUp() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="h-11"
-                    required />
-
+                    required
+                  />
                 </div>
 
                 <div className="space-y-2">
@@ -121,45 +130,39 @@ export default function SignUp() {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       className="h-11 pr-10"
-                      required />
-
+                      required
+                    />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors">
-
-                      {showPassword ?
-                        <EyeOff className="h-4 w-4" /> :
-
-                        <Eye className="h-4 w-4" />
-                      }
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </button>
                   </div>
 
                   {/* Password requirements */}
-                  {password.length > 0 &&
+                  {password.length > 0 && (
                     <motion.div
                       initial={{ opacity: 0, height: 0 }}
                       animate={{ opacity: 1, height: "auto" }}
                       className="space-y-1.5 pt-2">
-
-                      {passwordRequirements.map((req, index) =>
+                      {passwordRequirements.map((req, index) => (
                         <div
                           key={index}
-                          className={`flex items-center gap-2 text-xs transition-colors ${req.met ? "text-primary" : "text-muted-foreground"}`
-                          }>
-
+                          className={`flex items-center gap-2 text-xs transition-colors ${
+                            req.met ? "text-primary" : "text-muted-foreground"
+                          }`}>
                           <div
-                            className={`h-4 w-4 rounded-full flex items-center justify-center transition-colors ${req.met ? "bg-primary/20" : "bg-muted"}`
-                            }>
-
+                            className={`h-4 w-4 rounded-full flex items-center justify-center transition-colors ${
+                              req.met ? "bg-primary/20" : "bg-muted"
+                            }`}>
                             {req.met && <Check className="h-2.5 w-2.5" />}
                           </div>
                           {req.label}
                         </div>
-                      )}
+                      ))}
                     </motion.div>
-                  }
+                  )}
                 </div>
 
                 <Button type="submit" variant="hero" className="w-full h-11">
@@ -184,6 +187,6 @@ export default function SignUp() {
           </Card>
         </motion.div>
       </div>
-    </div>);
-
+    </div>
+  );
 }

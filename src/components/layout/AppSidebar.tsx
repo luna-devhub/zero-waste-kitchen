@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, ChevronRight, LogOut, Package, History, ChefHat, Share2, KeyRound } from "lucide-react";
+import { ChevronLeft, ChevronRight, LogOut, Package, History, ChefHat, Share2, KeyRound, BookOpen } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -27,6 +27,10 @@ const navItems = [{
   title: "History",
   url: "/history",
   icon: History
+}, {
+  title: "Recipe History",
+  url: "/recipe-history",
+  icon: BookOpen
 }];
 interface AppSidebarProps {
   isOpen: boolean;

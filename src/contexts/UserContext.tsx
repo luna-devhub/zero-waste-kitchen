@@ -1,6 +1,8 @@
+// src/contexts/UserContext.tsx
 import { createContext, useContext, useState, ReactNode, useEffect } from "react";
 
 interface User {
+  id: string;           // Add this line
   username: string;
   email: string;
 }
@@ -18,7 +20,15 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   // Load user from localStorage on mount
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
-    if (storedUser) setUser(JSON.parse(storedUser));
+    if (storedUser) {
+      try {
+        const parsedUser = JSON.parse(storedUser);
+        // Make sure the parsed user has an id
+        setUser(parsedUser);
+      } catch (error) {
+        console.error("Error parsing user from localStorage:", error);
+      }
+    }
   }, []);
 
   return (
